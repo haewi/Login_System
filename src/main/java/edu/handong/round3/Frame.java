@@ -1,18 +1,16 @@
 package edu.handong.round3;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Label;
-import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -87,6 +85,11 @@ public class Frame {
 	String idText = "", pwText = "";
 	String newId = "", newPw = "", newPwDouble = "";
 	String email = "";
+	
+	// admin checkboxes and indexes
+	ArrayList<String> adminCheck = new ArrayList<String>();
+	ArrayList<JCheckBox> adminCb = new ArrayList<JCheckBox>();
+	JTable table;
 	
 	
 	public Frame() {
@@ -263,6 +266,7 @@ public class Frame {
 		}
 	}
 	
+	
 	public void openAdminPage() {
 		
 		loginPage.setVisible(false);
@@ -282,36 +286,54 @@ public class Frame {
 		
 		
 		// table set-up
-		String[] header = {"name", "password", "email"};
-		
-		ResultSet rs = db.getAllUser();
-		String[][] contents = new String[db.getUserNum()][3];
-		String[] originalName = new String[db.getUserNum()];
-		try {
-			int i=0;
-			while(rs.next()) {
-				for(int j=0; j<3; j++) {
-					contents[i][j] = rs.getString(j+1);
-				}
-				originalName[i] = rs.getString(1);
-				i++;
-			}
-		} catch (SQLException e1) {
-			e1.printStackTrace();
-		}
-		
-		JTable table = new JTable(contents, header);
+		table = makeTable();
 		JScrollPane scroll = new JScrollPane(table);
 		scroll.setVisible(true);
 		scroll.setBounds(50, 50, 550, 280);
 		
 		adminPage.add(scroll);
 		
+		// panel set-up
+		JPanel adminPanel = new JPanel();
+		adminPanel.setLayout(null);
+		adminPanel.setBackground(new Color(220, 220, 220));
+		adminPanel.setBounds(20, 50, 30, 380);
+		
+		// check box set-up 
+		JCheckBox tmp = null;
+		ResultSet rs = db.getAllUser();
+		for(int i=0; i<db.getUserNum(); i++) {
+			try {
+				rs.next();
+				tmp = new JCheckBox(rs.getString(1));
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			tmp.addItemListener(new ItemListener() {
+				@Override
+				public void itemStateChanged(ItemEvent e) {
+					if(e.getStateChange() == ItemEvent.SELECTED) {
+						adminCheck.add(((JCheckBox) e.getSource()).getText());
+						System.out.println(((JCheckBox) e.getSource()).getText());
+						
+					}
+					else {
+						adminCheck.remove(((JCheckBox) e.getSource()).getText());
+					}
+				}
+			});
+			tmp.setBounds(0, 17+i*25, 25, 25);
+			adminPanel.add(tmp);
+		}
+		
+		adminPage.add(adminPanel);
+		
 		// table label set-up
 		JLabel userTable = new JLabel("Users");
 		userTable.setBounds(300, 15, 100, 40);
 		userTable.setFont(new Font("Chalkboard", Font.PLAIN, 15));
 		userTable.setForeground(Color.black);
+		
 		adminPage.add(userTable);
 		
 		// refresh button set-up
@@ -355,6 +377,30 @@ public class Frame {
 		delete.setFont(new Font("Chalkboard", Font.PLAIN, 15));
 		delete.setBounds(610, 100, 80, 40);
 		delete.setForeground(new Color(124, 124, 124));
+		delete.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				for(int i=0; i<adminCheck.size(); i++) {
+					ResultSet rs = db.getAllUser();
+					
+					try {
+						while(rs.next()) {
+							if(adminCheck.get(i).equals(rs.getString(1))){
+								db.deleteUser(rs.getString(1));
+							}
+						}
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+					
+					adminCheck.clear();
+					
+					// table update
+					adminPage.dispose();
+					openAdminPage();
+				}
+			}
+		});
 		
 		// logout button set-up
 		JButton logout = new JButton("Logout");
@@ -367,6 +413,29 @@ public class Frame {
 		adminPage.add(delete);
 		adminPage.add(logout);
 		
+	}
+	
+	public JTable makeTable() {
+		String[] header = {"name", "password", "email"};
+		ResultSet rs = db.getAllUser();
+		String[][] contents = new String[db.getUserNum()][3];
+		try {
+			int i=0;
+			while(rs.next()) {
+				for(int j=0; j<3; j++) {
+					contents[i][j] = rs.getString(j+1);
+				}
+				i++;
+			}
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+		
+		JTable table = new JTable(contents, header);
+		table.setFont(new Font("Dubai", Font.PLAIN, 15));
+		table.setRowHeight(25);
+		
+		return table;
 	}
 	
 	public void openPersonalPage() {
@@ -626,11 +695,10 @@ public class Frame {
 		cb.setFont(new Font("Chalkboard", Font.PLAIN, 12));
 		cb.setForeground(new Color(124, 124, 124));
 		cb.setBounds(45, 90, 140, 25);
-		cb.addChangeListener(new ChangeListener() {
-
+		cb.addItemListener(new ItemListener() {
 			@Override
-			public void stateChanged(ChangeEvent e) {
-				if(cb.isSelected()) {
+			public void itemStateChanged(ItemEvent e) {
+				if(e.getStateChange() == ItemEvent.SELECTED) {
 					rtfPW.setEchoChar((char) 0);
 					rtfPW2.setEchoChar((char) 0);
 				}
@@ -638,7 +706,6 @@ public class Frame {
 					rtfPW.setEchoChar('•');
 					rtfPW2.setEchoChar('•');
 				}
-				
 			}
 			
 		});
