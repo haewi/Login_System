@@ -14,6 +14,7 @@ import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -31,6 +32,7 @@ public class Frame {
 	JFrame register;
 	JFrame personal;
 	JFrame adminPage;
+	JFrame update;
 	
 	// DataBase Connector
 	MariaDBConnector db = new MariaDBConnector();
@@ -40,6 +42,7 @@ public class Frame {
 	JPanel loginPanel = new JPanel();
 	JPanel registerPanel = new JPanel();
 	JPanel personalPanel = new JPanel();
+	JPanel updatePanel = new JPanel();
 	
 	// login page labels
 	JLabel loginLabel = new JLabel("Login Page");
@@ -47,6 +50,7 @@ public class Frame {
 	JLabel lpw = new JLabel("PW:");
 	JLabel pwCheck = new JLabel("PW Check:");
 	JLabel createLabel = new JLabel("Create Account");
+	JLabel updateLabel = new JLabel("Update Account");
 	JLabel noUser = new JLabel("There is no user with that username.");
 	JLabel wrongPw = new JLabel("Wrong password!");
 	
@@ -75,6 +79,7 @@ public class Frame {
 	JPasswordField rtfPW = new JPasswordField();
 	JPasswordField rtfPW2 = new JPasswordField();
 	JTextField emailTf = new JTextField();
+	JComboBox<String> combo;
 	
 	// register labels
 	JLabel idCheck = new JLabel("");
@@ -85,6 +90,7 @@ public class Frame {
 	String idText = "", pwText = "";
 	String newId = "", newPw = "", newPwDouble = "";
 	String email = "";
+	String updateID="", updatePW="", updateEmail="", updatePwDouble="";
 	
 	// admin checkboxes and indexes
 	ArrayList<String> adminCheck = new ArrayList<String>();
@@ -94,6 +100,12 @@ public class Frame {
 	
 	public Frame() {
 		// login page set-up
+		openLoginPage();
+		
+	}
+	
+	public void openLoginPage() {
+		title.removeAll();
 		loginPage = new JFrame("Login Page");
 		loginPage.setBounds(100, 300, 400, 250);
 		loginPage.setVisible(true);
@@ -187,7 +199,6 @@ public class Frame {
 		loginPanel.add(b1);
 		loginPanel.add(b2);
 		loginPanel.add(cb);
-		
 	}
 	
 	public class LoginListener implements ActionListener {
@@ -220,10 +231,13 @@ public class Frame {
 							ltfID.setText("");
 							ltfPW.setText("");
 							
+							loginPage.dispose();
 							openAdminPage();
+//							System.out.println("admin");
 							
 						}
 						else { // personal page
+//							System.out.println("personal" + idText +"eof");
 							idText = "";
 							pwText = "";
 							ltfID.setText("");
@@ -234,8 +248,11 @@ public class Frame {
 							} catch (SQLException e1) {
 								e1.printStackTrace();
 							}
+							if(!userName.equals("admin")) {
 							
-							openPersonalPage();
+								loginPage.dispose();
+								openPersonalPage();
+							}
 						}
 					}
 					// password is wrong
@@ -268,8 +285,6 @@ public class Frame {
 	
 	
 	public void openAdminPage() {
-		
-		loginPage.setVisible(false);
 		
 		// administrator page set-up
 		adminPage = new JFrame("Administration");
@@ -314,8 +329,7 @@ public class Frame {
 				public void itemStateChanged(ItemEvent e) {
 					if(e.getStateChange() == ItemEvent.SELECTED) {
 						adminCheck.add(((JCheckBox) e.getSource()).getText());
-						System.out.println(((JCheckBox) e.getSource()).getText());
-						
+//						System.out.println(((JCheckBox) e.getSource()).getText());
 					}
 					else {
 						adminCheck.remove(((JCheckBox) e.getSource()).getText());
@@ -367,7 +381,7 @@ public class Frame {
 					for(int j=0; j<table.getColumnCount(); j++) {
 						data[j] = (String) table.getValueAt(i, j);
 					}
-					db.changeDate(name, data[0], data[1], data[2]);
+					db.changeData(name, data[0], data[1], data[2]);
 				}
 			}
 		}); // refresh action listener
@@ -456,10 +470,8 @@ public class Frame {
 			}
 		});
 		
-		loginPage.setVisible(false);
-		
 		personalPanel.setBounds(20, 20, 360, 240);
-		personalPanel.setBackground(Color.LIGHT_GRAY);
+		personalPanel.setBackground(new Color(224, 224, 224));
 		personalPanel.setLayout(null);
 		
 		exit.setBounds(10, 190, 50, 40);
@@ -467,8 +479,8 @@ public class Frame {
 		exit.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				loginPage.setVisible(true);
-				personal.setVisible(false);
+				openLoginPage();
+				personal.dispose();
 			}
 		});
 		
@@ -483,6 +495,7 @@ public class Frame {
 		
 		updateInfo.setBounds(190, 190, 160, 40);
 		updateInfo.setFont(new Font("Chalkboard", Font.PLAIN, 15));
+		updateInfo.addActionListener(new updateData());
 		
 		personalPanel.add(exit);
 		personalPanel.add(deleteAccount);
@@ -514,9 +527,9 @@ public class Frame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				db.deleteUser(userName);
-				confirm.setVisible(false);
-				personal.setVisible(false);
-				loginPage.setVisible(true);
+				confirm.dispose();
+				personal.dispose();
+				openLoginPage();
 				loginPanel.remove(noUser);
 				loginPanel.remove(wrongPw);
 			}
@@ -527,7 +540,7 @@ public class Frame {
 		no.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				confirm.setVisible(false);
+				confirm.dispose();
 			}
 		});
 		
@@ -535,6 +548,223 @@ public class Frame {
 		confirmPanel.add(no);
 		
 		confirm.add(confirmPanel);
+	}
+	
+	public class updateData implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			personal.dispose();
+			
+			title = new JPanel();
+			update = new JFrame("Update Information");
+			JButton back = new JButton("Personal Page");
+			JButton updateButton = new JButton("Update");
+			
+			// update for post-login
+			update.setVisible(true);
+			update.setBounds(100, 300, 400, 300);
+			update.getContentPane().setBackground(Color.white);
+			update.add(updatePanel);
+			update.add(title);
+			update.addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosing(WindowEvent e) {
+					System.exit(0);
+				}
+			});
+			
+			loginPage.dispose();
+			
+			// update panel set-up
+			updatePanel.setBounds(10, 50, 380, 220);
+			updatePanel.setBackground(new Color(234, 234, 234));
+			updatePanel.setLayout(null);
+			
+			// title panel set-up
+			title.setBounds(0, 0, 300, 50);
+			title.setBackground(Color.white);
+			title.setLayout(null);
+			
+			// create account label set-up
+			updateLabel.setBounds(130, 3, 170, 40);
+			updateLabel.setFont(new Font("Chalkboard", Font.PLAIN, 20));
+			title.add(updateLabel);
+			
+			// new id label and textfield set-up
+			rid.setBounds(19, 10, 30, 15);
+			rid.setFont(new Font("Chalkboard", Font.PLAIN, 18));
+			rid.setForeground(new Color(124, 124, 124));
+			rtfID.setBounds(44, 10, 326, 20);
+			rtfID.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					updateID = rtfID.getText();
+//					System.out.println("update: " + updateID);
+				}
+			});
+			
+			// new pw label and textfield set-up
+			rpw.setBounds(10, 25, 34, 50);
+			rpw.setFont(new Font("Chalkboard", Font.PLAIN, 18));
+			rpw.setForeground(new Color(124, 124, 124));
+			rtfPW.setBounds(44, 40, 326, 20);
+			rtfPW.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					updatePW = String.valueOf(rtfPW.getPassword());
+//					System.out.println("update: " + updatePW);
+				}
+				
+			});
+			
+			// password check label set-up
+			pwCheck.setBounds(10, 55, 90, 50);
+			pwCheck.setFont(new Font("Chalkboard", Font.PLAIN, 18));
+			pwCheck.setForeground(new Color(124, 124, 124));
+			rtfPW2.setBounds(100, 70, 270, 20);
+			rtfPW2.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					newPwDouble = String.valueOf(rtfPW2.getPassword());
+//					System.out.println("update: " + newPwDouble);
+				}
+				
+			});
+			
+			JCheckBox cb = new JCheckBox("Show password");
+			cb.setFont(new Font("Chalkboard", Font.PLAIN, 12));
+			cb.setForeground(new Color(124, 124, 124));
+			cb.setBounds(45, 90, 140, 25);
+			cb.addItemListener(new ItemListener() {
+				@Override
+				public void itemStateChanged(ItemEvent e) {
+					if(e.getStateChange() == ItemEvent.SELECTED) {
+						rtfPW.setEchoChar((char) 0);
+						rtfPW2.setEchoChar((char) 0);
+					}
+					else {
+						rtfPW.setEchoChar('•');
+						rtfPW2.setEchoChar('•');
+					}
+				}
+				
+			});
+			
+			// email label and text field
+			JLabel emailLabel = new JLabel("Email:");
+			emailLabel.setBounds(10, 105, 48, 50);
+			emailLabel.setFont(new Font("Chalkboard", Font.PLAIN, 18));
+			emailLabel.setForeground(new Color(124, 124, 124));
+			emailTf.setBounds(58, 120, 150, 20);
+			emailTf.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					updateEmail = String.valueOf(emailTf.getText());
+//					System.out.println("update: " + updateEmail);
+				}
+				
+			});
+			
+			JLabel emailAd = new JLabel("@");
+			emailAd.setBounds(208, 125, 15, 15);
+			emailAd.setFont(new Font("Chalkboard", Font.PLAIN, 18));
+			emailAd.setForeground(new Color(124, 124, 124));
+			emailAd.setVisible(true);
+			
+			String[] address = {"gmail.com", "naver.com", "handong.edu", "hotmail.com"};
+			combo = new JComboBox<String>(address);
+			combo.setBounds(223, 120, 147, 20);
+			
+			
+			// idCheck set-up
+			idCheck.setForeground(new Color(138, 165, 198));
+			idCheck.setBounds(40, 140, 300, 40);
+			idCheck.setFont(new Font("Chalkboard", Font.PLAIN, 15));
+			
+			back.setFont(new Font("Chalkboard", Font.PLAIN, 15));
+			back.setBounds(38, 175, 150, 40);
+			back.setForeground(new Color(124, 124, 124));
+			back.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					openPersonalPage();
+					update.dispose();
+				}
+			});
+			
+			updateButton.setFont(new Font("Chalkboard", Font.PLAIN, 15));
+			updateButton.setBounds(198, 175, 150, 40);
+			updateButton.setForeground(new Color(110, 110, 110));
+			updateButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					ResultSet rs = db.getAllUser();
+					updateID = rtfID.getText();
+					updatePW = String.valueOf(rtfPW.getPassword());
+					updateEmail = String.valueOf(emailTf.getText()) + "@" + combo.getSelectedItem().toString();
+					updatePwDouble = String.valueOf(rtfPW2.getPassword());
+
+					try {
+						while(rs.next()) {
+							if(userName.equals(rs.getString(1))) {
+								if(updateID.length()==0) {
+									idCheck.setText("Please enter your user ID.");
+								}
+								else if(updatePW.length()==0) {
+									idCheck.setText("Please enter your password.");
+								}
+								else if(updatePwDouble.length()==0) {
+									idCheck.setText("Please double check your password.");
+								}
+								else if(updateEmail.length() == 0) {
+									idCheck.setText("Please enter your email.");
+								}
+								else if(!userName.equals(updateID) && db.is_user(updateID)) {
+									idCheck.setText("There is another user with that username.");
+								}
+								else if(!updatePW.equals(updatePwDouble)) {
+									idCheck.setText("The passwords does not match each other.");
+								}
+								else {
+									db.changeData(userName, updateID, updatePW, updateEmail);
+									idCheck.setText("Account Updated!");
+									
+									newId = "";
+									rtfID.setText("");
+									newPw = "";
+									rtfPW.setText("");
+									newPwDouble = "";
+									rtfPW2.setText("");
+									email = "";
+									emailTf.setText("");
+								}
+								
+								registerPanel.repaint();
+							}
+						}
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+				}
+			});
+			
+			updatePanel.add(rid);
+			updatePanel.add(rtfID);
+			updatePanel.add(idCheck);
+			updatePanel.add(rpw);
+			updatePanel.add(rtfPW);
+			updatePanel.add(pwCheck);
+			updatePanel.add(rtfPW2);
+			updatePanel.add(cb);
+			updatePanel.add(back);
+			updatePanel.add(updateButton);
+			updatePanel.add(emailLabel);
+			updatePanel.add(emailAd);
+			updatePanel.add(emailTf);
+			updatePanel.add(combo);
+		}
+		
 	}
 	
 	public class registerListener implements ActionListener{
@@ -548,8 +778,8 @@ public class Frame {
 			email = emailTf.getText();
 			
 			if(e.getActionCommand().equals("Login Page")) {
-				loginPage.setVisible(true);
-				register.setVisible(false);
+				openLoginPage();
+				register.dispose();
 				idCheck.setText("Please enter your user ID.");
 				newId = "";
 				newPw = "";
@@ -559,17 +789,13 @@ public class Frame {
 				loginPanel.remove(wrongPw);
 			}
 			else if(e.getActionCommand().equals("Logout")) {
-				loginPage.setVisible(true);
-				adminPage.setVisible(false);
+				openLoginPage();
+				adminPage.dispose();
+				
 				loginPanel.remove(noUser);
 				loginPanel.remove(wrongPw);
 			}
 			else if(e.getActionCommand().equals("Create")) {
-				
-//				System.out.println(newId.length());
-//				System.out.println(newPw.length());
-//				System.out.println(newPwDouble.length());
-//				System.out.println();
 //				
 				if(newId.length()==0) {
 					idCheck.setText("Please enter your user ID.");
@@ -615,6 +841,9 @@ public class Frame {
 	}
 	
 	public void createRegisterFrame() {
+		if(register != null) register.dispose();
+		
+		title.removeAll();
 		title = new JPanel();
 		register = new JFrame("Create Account");
 		JButton back = new JButton("Login Page");
@@ -659,7 +888,7 @@ public class Frame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				newId = rtfID.getText();
-				System.out.println(newId);
+//				System.out.println(newId);
 			}
 		});
 		
@@ -672,7 +901,7 @@ public class Frame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				newPw = String.valueOf(rtfPW.getPassword());
-				System.out.println(newPw);
+//				System.out.println(newPw);
 			}
 			
 		});
@@ -686,7 +915,7 @@ public class Frame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				newPwDouble = String.valueOf(rtfPW2.getPassword());
-				System.out.println(newPwDouble);
+//				System.out.println(newPwDouble);
 			}
 			
 		});
@@ -715,15 +944,25 @@ public class Frame {
 		emailLabel.setBounds(10, 105, 48, 50);
 		emailLabel.setFont(new Font("Chalkboard", Font.PLAIN, 18));
 		emailLabel.setForeground(new Color(124, 124, 124));
-		emailTf.setBounds(58, 120, 312, 20);
+		emailTf.setBounds(58, 120, 150, 20);
 		emailTf.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				email = String.valueOf(emailTf.getText());
-				System.out.println(email);
+				email += "@" + combo.getSelectedItem().toString();
+//				System.out.println(email);
 			}
-			
 		});
+		
+		JLabel emailAd = new JLabel("@");
+		emailAd.setBounds(208, 125, 15, 15);
+		emailAd.setFont(new Font("Chalkboard", Font.PLAIN, 18));
+		emailAd.setForeground(new Color(124, 124, 124));
+		emailAd.setVisible(true);
+		
+		String[] address = {"gmail.com", "naver.com", "handong.edu", "hotmail.com"};
+		combo = new JComboBox<String>(address);
+		combo.setBounds(223, 120, 147, 20);
 		
 		// idCheck set-up
 		idCheck.setForeground(new Color(138, 165, 198));
@@ -751,7 +990,9 @@ public class Frame {
 		registerPanel.add(back);
 		registerPanel.add(create);
 		registerPanel.add(emailLabel);
+		registerPanel.add(emailAd);
 		registerPanel.add(emailTf);
+		registerPanel.add(combo);
 	}
 }
 

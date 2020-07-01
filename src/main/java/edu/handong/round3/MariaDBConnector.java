@@ -117,7 +117,7 @@ public class MariaDBConnector {
 	}
 	
 	// changes the data
-	public void changeDate(String name, String newName, String newPw, String newEmail) {
+	public void changeData(String name, String newName, String newPw, String newEmail) {
 //		System.out.println("  name: " + name + " new name: " + newName + " new password: " + newPw + " new email: " + newEmail);
 		String sql1 = "update userInfo set password='" + newPw + "' where name='" + name + "'";
 		String sql2 = "update userInfo set email='" + newEmail + "' where name='" + name + "'";
