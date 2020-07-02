@@ -81,6 +81,7 @@ public class Frame {
 	JPasswordField rtfPW2 = new JPasswordField();
 	JTextField emailTf = new JTextField();
 	JComboBox<String> combo;
+	JTextField numTf = new JTextField();
 	
 	// register labels
 	JLabel idCheck = new JLabel("");
@@ -89,9 +90,9 @@ public class Frame {
 	JLabel rpw = new JLabel("PW:");
 	
 	String idText = "", pwText = "";
-	String newId = "", newPw = "", newPwDouble = "";
+	String newId = "", newPw = "", newPwDouble = "", newNum = "";
 	String email = "";
-	String updateID="", updatePW="", updateEmail="", updatePwDouble="";
+	String updateID="", updatePW="", updateEmail="", updatePwDouble="", updateNum="";
 	
 	// admin checkboxes and indexes
 	ArrayList<String> adminCheck = new ArrayList<String>();
@@ -382,7 +383,7 @@ public class Frame {
 					for(int j=0; j<table.getColumnCount(); j++) {
 						data[j] = (String) table.getValueAt(i, j);
 					}
-					db.changeData(name, data[0], data[1], data[2]);
+					db.changeData(name, data[0], data[1], data[2], data[3]);
 				}
 			}
 		}); // refresh action listener
@@ -407,13 +408,12 @@ public class Frame {
 					} catch (SQLException e1) {
 						e1.printStackTrace();
 					}
-					
-					adminCheck.clear();
-					
-					// table update
-					adminPage.dispose();
-					openAdminPage();
 				}
+				adminCheck.clear();
+				
+				// table update
+				adminPage.dispose();
+				openAdminPage();
 			}
 		});
 		
@@ -431,13 +431,13 @@ public class Frame {
 	}
 	
 	public JTable makeTable() {
-		String[] header = {"name", "password", "email"};
+		String[] header = {"name", "password", "email", "number"};
 		ResultSet rs = db.getAllUser();
-		String[][] contents = new String[db.getUserNum()][3];
+		String[][] contents = new String[db.getUserNum()][4];
 		try {
 			int i=0;
 			while(rs.next()) {
-				for(int j=0; j<3; j++) {
+				for(int j=0; j<4; j++) {
 					contents[i][j] = rs.getString(j+1);
 				}
 				i++;
@@ -470,7 +470,8 @@ public class Frame {
 				System.exit(0);
 			}
 		});
-//		
+		
+		// add image
 		JLabel image = new JLabel();
 		image.setIcon(new ImageIcon("images/welcome.jpg"));
 		image.setVisible(true);
@@ -571,7 +572,7 @@ public class Frame {
 			
 			// update for post-login
 			update.setVisible(true);
-			update.setBounds(100, 300, 400, 300);
+			update.setBounds(100, 300, 400, 330);
 			update.getContentPane().setBackground(Color.white);
 			update.add(updatePanel);
 			update.add(title);
@@ -585,7 +586,7 @@ public class Frame {
 			loginPage.dispose();
 			
 			// update panel set-up
-			updatePanel.setBounds(10, 50, 380, 220);
+			updatePanel.setBounds(10, 50, 380, 250);
 			updatePanel.setBackground(new Color(234, 234, 234));
 			updatePanel.setLayout(null);
 			
@@ -668,10 +669,26 @@ public class Frame {
 			emailTf.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					updateEmail = String.valueOf(emailTf.getText());
+					updateEmail = emailTf.getText();
 //					System.out.println("update: " + updateEmail);
 				}
 				
+			});
+			
+			// new pw label and textfield set-up
+			JLabel num = new JLabel("Phone Number:");
+			num.setBounds(10, 135, 140, 50);
+			num.setFont(new Font("Chalkboard", Font.PLAIN, 18));
+			num.setForeground(new Color(124, 124, 124));
+			
+			JTextField numTf = new JTextField();
+			numTf.setBounds(140, 150, 230, 20);
+			numTf.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					updateNum = String.valueOf(numTf.getText());
+				}
+
 			});
 			
 			JLabel emailAd = new JLabel("@");
@@ -687,11 +704,11 @@ public class Frame {
 			
 			// idCheck set-up
 			idCheck.setForeground(new Color(138, 165, 198));
-			idCheck.setBounds(40, 140, 300, 40);
+			idCheck.setBounds(40, 170, 300, 40);
 			idCheck.setFont(new Font("Chalkboard", Font.PLAIN, 15));
 			
 			back.setFont(new Font("Chalkboard", Font.PLAIN, 15));
-			back.setBounds(38, 175, 150, 40);
+			back.setBounds(38, 205, 150, 40);
 			back.setForeground(new Color(124, 124, 124));
 			back.addActionListener(new ActionListener() {
 				@Override
@@ -702,7 +719,7 @@ public class Frame {
 			});
 			
 			updateButton.setFont(new Font("Chalkboard", Font.PLAIN, 15));
-			updateButton.setBounds(198, 175, 150, 40);
+			updateButton.setBounds(198, 205, 150, 40);
 			updateButton.setForeground(new Color(110, 110, 110));
 			updateButton.addActionListener(new ActionListener() {
 				@Override
@@ -712,6 +729,7 @@ public class Frame {
 					updatePW = String.valueOf(rtfPW.getPassword());
 					updateEmail = String.valueOf(emailTf.getText()) + "@" + combo.getSelectedItem().toString();
 					updatePwDouble = String.valueOf(rtfPW2.getPassword());
+					updateNum = numTf.getText();
 
 					try {
 						while(rs.next()) {
@@ -735,7 +753,7 @@ public class Frame {
 									idCheck.setText("The passwords does not match each other.");
 								}
 								else {
-									db.changeData(userName, updateID, updatePW, updateEmail);
+									db.changeData(userName, updateID, updatePW, updateEmail, updateNum);
 									idCheck.setText("Account Updated!");
 									
 									newId = "";
@@ -746,6 +764,7 @@ public class Frame {
 									rtfPW2.setText("");
 									email = "";
 									emailTf.setText("");
+									updateNum = "";
 								}
 								
 								registerPanel.repaint();
@@ -770,6 +789,8 @@ public class Frame {
 			updatePanel.add(emailLabel);
 			updatePanel.add(emailAd);
 			updatePanel.add(emailTf);
+			updatePanel.add(num);
+			updatePanel.add(numTf);
 			updatePanel.add(combo);
 		}
 		
@@ -784,6 +805,7 @@ public class Frame {
 			newPw = String.valueOf(rtfPW.getPassword());
 			newPwDouble = String.valueOf(rtfPW2.getPassword());
 			email = emailTf.getText();
+			newNum = numTf.getText();
 			
 			if(e.getActionCommand().equals("Login Page")) {
 				openLoginPage();
@@ -793,6 +815,7 @@ public class Frame {
 				newPw = "";
 				newPwDouble = "";
 				email = "";
+				newNum = "";
 				loginPanel.remove(noUser);
 				loginPanel.remove(wrongPw);
 			}
@@ -820,6 +843,9 @@ public class Frame {
 				else if(email.length() == 0) {
 					idCheck.setText("Please enter your email.");
 				}
+				else if(newNum.length() == 0) {
+					idCheck.setText("Please enter your phone number.");
+				}
 				else if(db.is_user(newId)) {
 					idCheck.setText("There is another user with that username.");
 //					System.out.println("exist username");
@@ -829,8 +855,9 @@ public class Frame {
 //					System.out.println("not match");
 				}
 				else {
-					db.addUser(newId, newPw, email);
+					db.addUser(newId, newPw, email, newNum);
 					idCheck.setText("Account Created!");
+//					System.out.println(newNum);
 					
 					newId = "";
 					rtfID.setText("");
@@ -840,6 +867,7 @@ public class Frame {
 					rtfPW2.setText("");
 					email = "";
 					emailTf.setText("");
+					numTf.setText("");
 				}
 				
 				registerPanel.repaint();
@@ -859,7 +887,7 @@ public class Frame {
 		
 		// register for post-login
 		register.setVisible(true);
-		register.setBounds(100, 300, 400, 300);
+		register.setBounds(100, 300, 400, 350);
 		register.getContentPane().setBackground(Color.white);
 		register.add(registerPanel);
 		register.add(title);
@@ -873,7 +901,7 @@ public class Frame {
 		loginPage.setVisible(false);
 		
 		// register panel set-up
-		registerPanel.setBounds(10, 50, 380, 220);
+		registerPanel.setBounds(10, 50, 380, 250);
 		registerPanel.setBackground(new Color(234, 234, 234));
 		registerPanel.setLayout(null);
 		
@@ -928,6 +956,21 @@ public class Frame {
 			
 		});
 		
+		// new pw label and textfield set-up
+		JLabel num = new JLabel("Phone Number:");
+		num.setBounds(10, 135, 140, 50);
+		num.setFont(new Font("Chalkboard", Font.PLAIN, 18));
+		num.setForeground(new Color(124, 124, 124));
+		
+		numTf.setBounds(140, 150, 230, 20);
+		numTf.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				updateNum = String.valueOf(numTf.getText());
+			}
+
+		});
+		
 		JCheckBox cb = new JCheckBox("Show password");
 		cb.setFont(new Font("Chalkboard", Font.PLAIN, 12));
 		cb.setForeground(new Color(124, 124, 124));
@@ -974,16 +1017,16 @@ public class Frame {
 		
 		// idCheck set-up
 		idCheck.setForeground(new Color(138, 165, 198));
-		idCheck.setBounds(40, 140, 300, 40);
+		idCheck.setBounds(40, 170, 300, 40);
 		idCheck.setFont(new Font("Chalkboard", Font.PLAIN, 15));
 		
 		back.setFont(new Font("Chalkboard", Font.PLAIN, 15));
-		back.setBounds(38, 175, 150, 40);
+		back.setBounds(38, 205, 150, 40);
 		back.setForeground(new Color(124, 124, 124));
 		back.addActionListener(new registerListener());
 		
 		create.setFont(new Font("Chalkboard", Font.PLAIN, 15));
-		create.setBounds(198, 175, 150, 40);
+		create.setBounds(198, 205, 150, 40);
 		create.setForeground(new Color(110, 110, 110));
 		create.addActionListener(new registerListener());
 		
@@ -1000,6 +1043,8 @@ public class Frame {
 		registerPanel.add(emailLabel);
 		registerPanel.add(emailAd);
 		registerPanel.add(emailTf);
+		registerPanel.add(num);
+		registerPanel.add(numTf);
 		registerPanel.add(combo);
 	}
 }

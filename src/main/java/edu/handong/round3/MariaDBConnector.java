@@ -35,12 +35,12 @@ public class MariaDBConnector {
 	}
 	
 	// adding user to database, if another user is using the username, it returns false. Else, true
-	public boolean addUser(String name, String pw, String email) {
+	public boolean addUser(String name, String pw, String email, String number) {
 		
-		String sql = "INSERT INTO userInfo(name, password, email) VALUES";
+		String sql = "INSERT INTO userInfo(name, password, email, number) VALUES";
 		
 		try {
-			sql += "('" + new String(name.getBytes(), "ISO-8859-1") +  "','" + new String(pw.getBytes(), "ISO-8859-1") +  "','" + new String(email.getBytes(), "ISO-8859-1") + "')";
+			sql += "('" + new String(name.getBytes(), "ISO-8859-1") +  "','" + new String(pw.getBytes(), "ISO-8859-1") +  "','" + new String(email.getBytes(), "ISO-8859-1") + "','" + new String(number.getBytes(), "ISO-8859-1") + "')";
 			stmt.executeUpdate(sql);
 		} catch (SQLException e) {
 			return false;
@@ -117,17 +117,19 @@ public class MariaDBConnector {
 	}
 	
 	// changes the data
-	public void changeData(String name, String newName, String newPw, String newEmail) {
+	public void changeData(String name, String newName, String newPw, String newEmail, String newNum) {
 //		System.out.println("  name: " + name + " new name: " + newName + " new password: " + newPw + " new email: " + newEmail);
 		String sql1 = "update userInfo set password='" + newPw + "' where name='" + name + "'";
 		String sql2 = "update userInfo set email='" + newEmail + "' where name='" + name + "'";
-		String sql3 = "update userInfo set name='" + newName + "' where email='" + newEmail + "'";
+		String sql3 = "update userInfo set number='" + newNum + "' where name='" + name + "'";
+		String sql4 = "update userInfo set name='" + newName + "' where email='" + newEmail + "'";
 		
 //		System.out.println(sql1 + "\n");
 		try {
 			rs = stmt.executeQuery(sql1);
 			rs = stmt.executeQuery(sql2);
 			rs = stmt.executeQuery(sql3);
+			rs = stmt.executeQuery(sql4);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
