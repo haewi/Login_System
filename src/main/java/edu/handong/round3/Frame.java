@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -469,6 +470,13 @@ public class Frame {
 				System.exit(0);
 			}
 		});
+//		
+		JLabel image = new JLabel();
+		image.setIcon(new ImageIcon("images/welcome.jpg"));
+		image.setVisible(true);
+		image.setBounds(5, 5, 350, 180);
+		
+		personalPanel.add(image);
 		
 		personalPanel.setBounds(20, 20, 360, 240);
 		personalPanel.setBackground(new Color(224, 224, 224));

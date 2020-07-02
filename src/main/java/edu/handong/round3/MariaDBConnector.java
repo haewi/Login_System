@@ -17,7 +17,7 @@ public class MariaDBConnector {
 		try {
 			Class.forName(driver); // Drive 클래스 로드
 			con = DriverManager.getConnection( // connection 객체 생성
-					"jdbc:mariadb://172.17.206.32:3306/userdb", // url
+					"jdbc:mariadb://172.17.206.28:3306/userdb", // url
 					"haewi", // user
 					"1234"); // password
 			stmt = con.createStatement();
