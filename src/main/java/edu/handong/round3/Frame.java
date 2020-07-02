@@ -27,7 +27,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 public class Frame {
-	
 	// Frames
 	JFrame loginPage;
 	JFrame register;
